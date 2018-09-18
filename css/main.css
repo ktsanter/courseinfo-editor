@@ -1,0 +1,65 @@
+.cif-colorscheme {
+	--cif-color1: #2d3436;
+	--cif-color2: #f8f8f8;
+	--cif-color3: #c8c8c8;
+	--cif-color4: #2f8d98;
+	--cif-color5: #ffffff;
+}
+
+body {
+	color: var(--cif-color1);
+	background-color: var(--cif-color2);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	margin-left: 12px;
+	margin-right: 12px;
+}
+
+.cif-title {
+	color: var(--cif-color5);
+	background-color: var(--cif-color4);
+	border-color: var(--cif-color5);
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: bold;
+	padding: 4px;
+}
+
+.cif-notice {
+	color: blue;
+	font-size: 14px;
+	font-style: italic;
+}
+
+.col {
+	border: 1px solid black;
+}
+
+div.item:hover {
+	border: 1px solid var(--cif-color1);
+}
+	
+div.item-controls {
+	display: none;
+	width: 100px;
+	float: right;
+	padding: 2px;
+	font-size: 12px;
+	font-weight: bold;
+	color: #003B99;
+}
+
+div.item:hover .item-controls {
+	display: block;
+}
+
+.item-handle {
+    cursor: move;
+	color: var(--cif-color2);
+	background-color: var(--cif-color4);
+	padding-left: 8px;
+	padding-right: 8px;
+	margin-right: 4px;
+}
