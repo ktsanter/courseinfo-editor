@@ -12,7 +12,11 @@
 </head>
 
 <body class="cif-colorscheme">
-	<div id="title"> </div>
+	<div id="header"> 
+		<span id="toolname"></span>
+		<span id="controls"></span>	
+	</div>
+
 	<div id="notice"></div>
 	
 	<div id="contents" class='container-fluid'>	
@@ -20,9 +24,12 @@
 			<div id='tree1' class='col col-lg-3'></div>
 			
 			<div id='editspace' class='col col-lg-9'>
-				<div id='edit-title' class='editspace-title'></div>
+				<div class='editspace-title'>
+					<span class='editspace-label'> Label </span>
+					<input id='edit-title' type='text'></input>
+				</div>
 				<textarea id='markdown-edit' class="form-control" rows="15" maxLength="5000"></textarea>
-				<div id='preview-title' class='editspace-title'></div>
+				<div id='preview-title' class='editspace-title editspace-label'></div>
 				<div id='preview'>	</div>
 			</div>
 		</div>
@@ -32,7 +39,6 @@
 		<span id='contextmenu-item'></span>
 		<hr id='contextmenu-divider'>
 		<ul class="menu-options">
-			<li id='rename' class='menu-option'>rename item</li>
 			<li id='add' class="menu-option">add item</li>
 			<li id='delete' class="menu-option">delete item</li>
 			</ul>

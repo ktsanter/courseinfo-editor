@@ -83,13 +83,22 @@ div.item:hover .item-controls {
 	font-size: 13px;
 }
 
+.editspace-label {
+	padding-left: 6px;
+	padding-right: 6px;
+}
+
+#edit-title {
+	width: 90%;
+}
+
 #preview {
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	font-size: 13px;
 }
 
 .menu {
-  width: 120px;
+ /* width: 120px;*/
   /*box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);*/
   border: 1px solid black;
   background-color: white;
@@ -129,8 +138,7 @@ div.item:hover .item-controls {
   margin: 0px 0px 0px 10px;
 }
 
-.menu-option	 {
-	
+.menu-option {
 }
 
 .menu-option:hover {

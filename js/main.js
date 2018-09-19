@@ -1,9 +1,7 @@
 //
-// TODO: add itemData entry when leaf is edited
 // TODO; add save and load controls
 // TODO: add API for storage
 // TODO: incorporate standard CSS into MD display
-// TODO: scheme for truncating node names in tree but keeping full elsewhere
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info editor'
@@ -29,18 +27,20 @@ const app = function () {
 	var treeLayout = [
 		{
 			id: 0,
-			name: 'node1',
-				children: [
-					{ id: 1, name: 'child1', content: {label: "my first set of markdown", markdown:"# This is a big header"} },
-					{ id: 2, name: 'child2', content: {label: "my second set of markdown", markdown: "***bold italic***"} }
-				]
+			name: 'the first group',
+			content: {label: "the first group", markdown: ""},
+			children: [
+				{ id: 1, name: 'child1', content: {label: "my first set of markdown", markdown:"# This is a big header"} },
+				{ id: 2, name: 'child2', content: {label: "my second set of markdown", markdown: "***bold italic***"} }
+			]
 		},
 		{
 			id: 3,
-			name: 'node2',
-				children: [
-					{ id: 4, name: 'child3', content:{label: "label for grinning face", markdown:"## ::grinning face::"} }
-				]
+			name: 'the second group',
+			content: {label: "the second group", markdown: ""},
+			children: [
+				{ id: 4, name: 'child3', content:{label: "label for grinning face", markdown:"## ::grinning face::"} }
+			]
 		}
 	];
 	
@@ -48,10 +48,15 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	function init () {
-		
 		page.body = document.getElementsByTagName('body')[0];
+
+		page.header = document.getElementById('header');
+		page.header.toolname = document.getElementById('toolname');
+		page.header.controls = document.getElementById('controls');
+
 		page.notice = document.getElementById('notice');
 		page.title = document.getElementById('title');
+
 		page.itemtree = $('#tree1');
 		page.edittitle = $("#edit-title");
 		page.editarea = $("#markdown-edit");
@@ -61,10 +66,10 @@ const app = function () {
 		page.menuitem = document.getElementById('contextmenu-item');
 						
 		page.body.classList.add('cif-colorscheme');
-		page.title.classList.add('cif-title');
+		page.header.classList.add('cif-title');
 		page.notice.classList.add('cif-notice');			
 		
-		page.title.innerHTML = PAGE_TITLE;
+		page.header.toolname.innerHTML = PAGE_TITLE;
 		
 		_setNotice('initializing...');
 		if (!_initializeSettings()) {
@@ -101,6 +106,14 @@ result = true;
 	// page rendering
 	//-----------------------------------------------------------------------------
 	function _renderPage() {
+		var elemSave= _makeButton('btnSave', 'cse-control', '💾', 'save', _saveButtonClicked);
+		var elemReload = _makeButton('btnReload', 'cse-control', '🔄', 'reload', _reloadButtonClicked);
+		page.savebutton = elemSave;
+		page.reloadbutton = elemReload;
+		console.log(page.header.controls.id);
+		page.header.controls.appendChild(elemSave);
+		page.header.controls.appendChild(elemReload);
+
 		$(function() {
 			page.itemtree.tree({
 				data: treeLayout,
@@ -124,6 +137,9 @@ result = true;
 		window.addEventListener('keyup', function(e) {
 			if (e.which == 27) displayMenu('hide');
 		});
+		window.addEventListener('click', function(e) {
+			displayMenu('hide');
+		});
 
 		// after tree loads, auto select first item if it exists
 		page.itemtree.on(
@@ -140,20 +156,28 @@ result = true;
 	//------------------------------------------------------------------
 	// handlers
 	//------------------------------------------------------------------
+	function _saveButtonClicked() {
+		console.log('save');
+	}
+	
+	function _reloadButtonClicked() {
+		console.log('reload');
+	}
+	
 	function _treeSelectHandler(e) {
 		if (e.node == null) return;
 
-		console.log('sekect');
 		var oldNode = settings.currentnode;
 		var newNode = page.itemtree.tree('getNodeById', e.node.id);
-		console.log(e.node.id);
 		
 		displayMenu('hide');
 
 		// save editing work 
-		if (oldNode != null && _isLeaf(oldNode)) {
-			var content = {label: oldNode.content.label, markdown: page.editarea.val()};
-			page.itemtree.tree('updateNode', oldNode, {content: content} );
+		if (oldNode != null) {
+			var name = page.edittitle.val();
+			if (name.length > 40) name = name.substring(0,40) + '...';
+			var content = {label: page.edittitle.val(), markdown: page.editarea.val()};
+			page.itemtree.tree('updateNode', oldNode, {name: name, content: content} );
 		}
 		
 		_loadNodeContent(newNode);
@@ -169,24 +193,13 @@ result = true;
 	}
 	
 	function _contextMenuHandler(e) {
-		if (e.currentTarget.id == 'rename') {
-			_renameNode(settings.contextmenuitem);
-		} else if (e.currentTarget.id == 'add') {
+		if (e.currentTarget.id == 'add') {
 			_addNodeAfter(settings.contextmenuitem);
 		} else if (e.currentTarget.id == 'delete') {
 			_removeNode(settings.contextmenuitem);
 		}
 		
 		displayMenu('hide');
-	}
-	
-	function _renameNode(node) {
-		var newName = prompt("New name for:", node.name);
-		var currentId = node.id;
-		
-		if (!(newName == null || newName == '')) {
-			page.itemtree.tree('updateNode', node, { name: newName });
-		}
 	}
 	
 	function _addNodeAfter(node) {
@@ -197,7 +210,7 @@ result = true;
 		    'addNodeAfter', {
 				name: 'new_node', 
 				id: newId,
-				content: {label: '', markdown: ''}
+				content: {label: 'new_node', markdown: ''}
 			}, 
 		node);  
 		
@@ -205,7 +218,7 @@ result = true;
 	}
 	
 	function _removeNode(node) {
-		if (confirm('The item named ' + node.name + ' will be permanently removed along with any children.\nPress OK to delete the item.')) {
+		if (confirm('The item named \n"' + node.content.label + '"\nwill be permanently removed along with any children.\n\nPress OK to delete the item.')) {
 			page.itemtree.tree('removeNode', node);
 		}
 	}
@@ -218,19 +231,19 @@ result = true;
 
 	function _loadNodeContent(node) {
 		if (node.hasOwnProperty('content')){
-			page.edittitle.html('Label: ' + node.content.label);
+			page.edittitle.val(node.content.label);
 			page.previewtitle.html('Preview: ' + node.content.label);
 			page.editarea.val(node.content.markdown);
 		} else {
-			page.edittitle.html('Label:');
+			page.edittitle.val('');
 			page.previewtitle.html('Preview:');
 			page.editarea.val('');
 		}
 		
 		if (_isLeaf(node)) {
-			page.editarea.attr("disabled",false);
+			page.editarea.prop("disabled", false);
 		} else {
-			page.editarea.attr("disabled","disabled");
+			page.editarea.prop("disabled", true);
 		}
 	}
 	
@@ -281,7 +294,7 @@ result = true;
 			var idval = parseInt(id);
 			if (idval >= newId) newId = idval + 1;
 		}
-		console.log('newId=' + newId);
+
 		return newId;
 	}
 	
