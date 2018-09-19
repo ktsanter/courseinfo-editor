@@ -20,16 +20,19 @@
 			<div id='tree1' class='col col-lg-3'></div>
 			
 			<div id='editspace' class='col col-lg-9'>
-				<div> Markdown code </div>
-				<textarea id='testInput' class="form-control" rows="15" maxLength="5000"></textarea>
-				<div> Preview </div>
-				<div id='testOutput'></div>
+				<div class='editspace-title'> Markdown code </div>
+				<textarea id='markdown-edit' class="form-control" rows="15" maxLength="5000"></textarea>
+				<div class='editspace-title'> Preview </div>
+				<div id='preview'></div>
 			</div>
 		</div>
 	</div>
 
 	<div id='contextmenu' class="menu">
+		<span id='contextmenu-item'></span>
+		<hr id='contextmenu-divider'>
 		<ul class="menu-options">
+			<li id='rename' class='menu-option'>rename item</li>
 			<li id='add' class="menu-option">add item</li>
 			<li id='delete' class="menu-option">delete item</li>
 			</ul>
