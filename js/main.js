@@ -10,29 +10,29 @@ const app = function () {
 	const PAGE_TITLE = 'Course info editor'
 		
 	const page = {};
-	const settings = {
-		"masterlist": {
-				"0": "aaaaaa", 
-				"1": "bbbbbb", 
-				"2": "cccccc",
-				"3": "dddddd", 
-				"4": "eeeeee"
-		},
-		
-		"itemList": {
-		    "left": [
-				{"masterkey": 0}, 
-				{"masterkey": 1}, 
-				{"masterkey": 2}
-			],
-		    "right": [
-				{"masterkey": 3}, 
-				{"masterkey": 4}
-			]
-		 }
-	};
+	const settings = {};
 
-	//---------------------------------
+	var treeLayout = [
+		{
+			name: 'node1',
+				children: [
+					{ name: 'child1' },
+					{ name: 'child2' }
+				]
+		},
+		{
+			name: 'node2',
+				children: [
+					{ name: 'child3' }
+				]
+		}
+	];
+	
+	var itemData = {
+		child1: "# This is a big header",
+		child2: "***bold italic***",
+		child3: "## ::grinning face::"
+	}
 	
 	//---------------------------------------
 	// get things going
@@ -43,6 +43,9 @@ const app = function () {
 		page.notice = document.getElementById('notice');
 		page.title = document.getElementById('title');
 		page.contents = document.getElementById('contents');
+		page.editarea = $("#testInput");
+		page.previewarea = $("#testOutput");
+		page.menu = document.getElementById('contextmenu');
 						
 		page.body.classList.add('cif-colorscheme');
 		page.title.classList.add('cif-title');
@@ -50,9 +53,11 @@ const app = function () {
 		
 		page.title.innerHTML = PAGE_TITLE;
 		
+		_setNotice('initializing...');
 		if (!_initializeSettings()) {
 			_setNotice('Failed to initialize - invalid parameters');
 		} else {
+			_setNotice('');
             _renderPage();
 		}
 	}
@@ -83,235 +88,56 @@ result = true;
 	// page rendering
 	//-----------------------------------------------------------------------------
 	function _renderPage() {
-		var elemRow = document.createElement('div');
-		elemRow.classList.add('row');
+		$(function() {
+			$('#tree1').tree({
+				data: treeLayout,
+				dragAndDrop: true
+			});
+		});
 		
-		var elemLeft = document.createElement('div');
-		elemLeft.id = 'left';
-		elemLeft.classList.add('col');
-		elemLeft.addEventListener('drop', function(ev) { dropHandler(ev); });
-		elemLeft.addEventListener('dragover', function(ev) { dragoverHandler(ev); });
-
-		page.contents.appendChild(elemRow);
+		$('#tree1').on('tree.click', function(e) {_treeClickHandler(e);} );
+		$('#tree1').on('tree.contextmenu', function(e) {_treeRightClickHandler(e);} );
 		
-		page.listRow = elemRow;		
-		_renderItemLists();		
+		page.editarea.bind('input change', function() {
+			handleTestInputChange();
+		});
+		
+		$(".menu-option").on('click', function(e) {_contextMenuHandler(e);}); 
+		window.addEventListener('keyup', function(e) {
+			if (e.which == 27) displayMenu('hide');
+		});
 	}	
 	
-	function _renderItemLists() {
-		var elemContainer = document.getElementById('left');
-		if (elemContainer != null) elemContainer.parentNode.removeChild(elemContainer);
-		var elemContainer = document.getElementById('right');
-		if (elemContainer != null) elemContainer.parentNode.removeChild(elemContainer);
+	//------------------------------------------------------------------
+	// handlers
+	//------------------------------------------------------------------
+	function _treeClickHandler(e) {
+		console.log(e);
+		var name = e.node.name;
+		var isLeaf = (e.node.children.length == 0);
 		
-		page.listRow.appendChild(_renderItemList("left", 0, settings.itemList.left));
-		page.listRow.appendChild(_renderItemList("right", settings.itemList.left.length, settings.itemList.right));
+		if (isLeaf) {
+			page.editarea.val(itemData[name]);
+			handleTestInputChange();
+		}
+	}
+	
+	function _treeRightClickHandler(e) {
+		var name = e.node.name;
+		var isLeaf = (e.node.children.length == 0);
 
-		_addDragAndDropListeners();
+		setMenuPosition(e.click_event.pageX, e.click_event.pageY);
 	}
 	
-	function _renderItemList(containerId, baseItemIdNum, itemList) {
-		// build new list elements
-		elemContainer = document.createElement('div');
-		elemContainer.id = containerId;
-		elemContainer.classList.add('col');
-		elemContainer.addEventListener('drop', function(ev) { dropHandler(ev); });
-		elemContainer.addEventListener('dragover', function(ev) { dragoverHandler(ev); });
-		
-		for (var i = 0; i < itemList.length; i++) {
-			var masterkey = itemList[i].masterkey;
-			elemContainer.appendChild(_renderItem(baseItemIdNum + i, masterkey));
-		}
-
-		return elemContainer;
+	function _contextMenuHandler(e) {
+		console.log('contextMenuHandler: e=' + e.currentTarget.id);
+		displayMenu('hide');
 	}
 	
-	function _renderItem(index, masterkey) {
-		var idSuffix = index.toString().padStart(3, '0') + '_' + masterkey.toString().padStart(3, '0');
-		var elemItem = document.createElement('div');
-		elemItem.id = 'item' + idSuffix;
-		elemItem.classList.add('item');
-		
-		var elemContents = document.createElement('div');
-		elemContents.id = 'itemcontents' + idSuffix;
-		
-		var elemHandle = document.createElement('span');
-		elemHandle.id = 'itemhandle' + idSuffix;
-		elemHandle.classList.add('item-handle');
-		elemHandle.innerHTML = '+';
-		
-		var elemInnerContents = document.createElement('span');
-		elemInnerContents.id = 'iteminnercontents' + idSuffix;
-		elemInnerContents.innerHTML = _getMasterItemContent(masterkey);
-		
-		var elemControls = document.createElement('div');
-		elemControls.id = 'itemcontrols' + idSuffix;
-		elemControls.classList.add('item-controls');
-		elemControls.innerHTML = '[controls]';
-		
-		elemContents.appendChild(elemHandle);
-		elemContents.appendChild(elemInnerContents);
-		elemContents.appendChild(elemControls);
-		
-		elemItem.appendChild(elemContents);
-		
-		return elemItem;
-	}
-		
-	//------------------------------------------------
-	// item list management
-	//------------------------------------------------
-	function _moveListItem(idColSource, idItemSource, idColDest, idItemDest) {
-		var masterkeySource  = parseInt(idItemSource.slice(-3));
-		var positionDest = -1;
-		if (idItemDest != null) positionDest = parseInt(idItemDest.slice(4,7));
-		
-		if (idColSource == 'right' && idColDest == 'right') {
-			// do nothing - no reordering in right column
-			
-		} else if (idColSource == 'right' && idColDest == 'left') {
-			_removeItemFromList('right', masterkeySource);
-			_addItemToList('left', masterkeySource, positionDest);
-			
-		} else if (idColSource == 'left' && idColDest == 'right') {
-			_removeItemFromList('left', masterkeySource);
-			_addItemToList('right', masterkeySource, _findInsertPosition(masterkeySource));
-
-		} else {
-			_removeItemFromList('left', masterkeySource);
-			_addItemToList('left', masterkeySource, positionDest);
-		}
-				
-		_renderItemLists();
-	}
-	
-	function _removeItemFromList(colname, masterkey) {
-		var list = settings.itemList[colname];
-		var newList = [];
-		
-		for (var i = 0; i < list.length; i++) {
-			var item = list[i];
-			if (item.masterkey != masterkey) {
-				newList.push(item);
-			}
-		}
-
-		settings.itemList[colname] = newList;
-	}
-	
-	function _addItemToList(colname, masterkey, addAfterPosition) {
-		var list = settings.itemList[colname];
-		var newList = [];
-    	var newItem = {"masterkey": masterkey};
-		
-		var added = false;
-		if (addAfterPosition == -2) {
-			newList.push(newItem);
-			added = true;
-		}
-		for (var i = 0; i < list.length; i++) {
-			var item = list[i];
-			newList.push(item);
-			if (addAfterPosition == i) {
-				newList.push(newItem);
-				added = true;
-			}
-		}
-		if (!added) newList.push(newItem);
-
-		settings.itemList[colname] = newList;
-	}
-	
-	function _getMasterItemContent(masterkey) {
-		return settings.masterlist[masterkey];
-	}
-	
-	function _findInsertPosition(masterkey) {
-		var list = settings.itemList.right;
-		var done = false;
-		var index = -2;
-		for (var i = 0; i < list.length && !done; i++) {
-			if (list[i].masterkey < masterkey) {
-				index = i;
-			} else {
-				done = true;
-			}
-		}
-		return index;
-	}
-	
-	//------------------------------------------------
-	// drag and drop handlers and listeners
-	//------------------------------------------------
-	function _addDragAndDropListeners() {
-		var handleElements = document.getElementsByClassName('item-handle');
-		for (var i = 0; i < handleElements.length; i++) {
-			var elem = handleElements[i];
-			elem.onmousedown = function(e) {
-				e.target.parentNode.setAttribute('draggable', 'true')
-			};
-		}
-	
-		var itemElements = document.getElementsByClassName('item');
-		for (var i = 0; i < itemElements.length; i++) {
-			var elem = itemElements[i];
-			addDragStartListener(elem, elem.id);
-			addDragEndListener(elem);
-		}		
-	}
-	
-	function addDragStartListener(elem, id) {
-		elem.addEventListener('dragstart', function(e) {
-			e.dataTransfer.setData('text/plain', id);
-			e.dataTransfer.dropEffect = "move";		
-		});
-	}
-	
-	function addDragEndListener(elem) {
-		elem.addEventListener('dragend', function(e) {
-  		  e.target.setAttribute('draggable', 'false');
-		});
-	}
-	
-	function dragoverHandler(ev) {
-      ev.preventDefault();
-	}
-
-	function dropHandler(ev) {
-		var elemSource = document.getElementById(ev.dataTransfer.getData("text"));
-		var elemDroppedOn = ev.target;
-				
-		_moveListItem(_getColumnId(elemSource),  _getItemId(elemSource), _getColumnId(elemDroppedOn), _getItemId(elemDroppedOn));
-	}
-	
-	function _getColumnId(elem) {
-		var idColumn = null;
-		var traversingElem = elem;
-		
-		for (var i = 0; i < 5 && idColumn == null; i++) {
-			if (traversingElem.classList.contains('col')) {
-				idColumn = traversingElem.id;
-			} else {
-				traversingElem = traversingElem.parentNode;
-			}
-		}
-		
-		return idColumn;
-	}
-	
-	function _getItemId(elem) {
-		var idItem = null;
-		var traversingElem = elem;
-		
-		for (var i = 0; i < 5 && idItem == null; i++) {
-			if (traversingElem.classList.contains('item')) {
-				idItem = traversingElem.id;
-			} else {
-				traversingElem = traversingElem.parentNode;
-			}
-		}
-		
-		return idItem;
+	function handleTestInputChange() {
+		var orig = page.editarea.val();
+		var formatted = formatTextFromMarkup(orig, false);
+		page.previewarea.html(formatted);
 	}
 	
 	//---------------------------------------
@@ -338,6 +164,16 @@ result = true;
 		btn.addEventListener('click', listener, false);
 		return btn;
 	}
+	
+	function displayMenu(command) {
+		page.menu.style.display = (command == "show" ? "block" : "none");
+	};
+
+	function setMenuPosition(left, top) {
+		page.menu.style.left = left.toString() + 'px';
+		page.menu.style.top = top.toString() + 'px';
+		displayMenu('show');
+	};		
 	
 	return {
 		init: init
