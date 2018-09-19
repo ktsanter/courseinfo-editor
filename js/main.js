@@ -2,6 +2,8 @@
 // TODO: add itemData entry when leaf is edited
 // TODO; add save and load controls
 // TODO: add API for storage
+// TODO: incorporate standard CSS into MD display
+// TODO: scheme for truncating node names in tree but keeping full elsewhere
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info editor'
@@ -171,7 +173,11 @@ result = true;
 	}
 	
 	function _addNodeAfter(node) {
-		page.itemtree.tree('addNodeAfter', {name: 'new_node', id: _getUniqueTreeId()}, node);
+		var newId = _getUniqueTreeId();  // get id for new node
+
+		page.itemtree.tree('selectNode', null);  // deselect any selected nodes
+		page.itemtree.tree('addNodeAfter', {name: 'new_node', id: newId}, node);  // append new node
+		page.itemtree.tree('selectNode', page.itemtree.tree('getNodeById', newId));  // select new node
 	}
 	
 	function _removeNode(node) {
