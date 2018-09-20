@@ -1,7 +1,6 @@
 //
-// TODO; add save and load controls
-// TODO: add API for storage
 // TODO: incorporate standard CSS into MD display
+// TODO: add flattened node list to save data
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info editor'
@@ -11,6 +10,7 @@ const app = function () {
 		notice: null,
 		title: null,
 		itemtree: null,
+		editspace: null,
 		edittitle: null,
 		editarea: null,
 		previewtitle: null,
@@ -23,26 +23,6 @@ const app = function () {
 		currentnode: null,
 		contextmenuitem: ''
 	};
-
-	var treeLayout = [
-		{
-			id: 0,
-			name: 'the first group',
-			content: {label: "the first group", markdown: ""},
-			children: [
-				{ id: 1, name: 'child1', content: {label: "my first set of markdown", markdown:"# This is a big header"} },
-				{ id: 2, name: 'child2', content: {label: "my second set of markdown", markdown: "***bold italic***"} }
-			]
-		},
-		{
-			id: 3,
-			name: 'the second group',
-			content: {label: "the second group", markdown: ""},
-			children: [
-				{ id: 4, name: 'child3', content:{label: "label for grinning face", markdown:"## ::grinning face::"} }
-			]
-		}
-	];
 	
 	//---------------------------------------
 	// get things going
@@ -58,6 +38,7 @@ const app = function () {
 		page.title = document.getElementById('title');
 
 		page.itemtree = $('#tree1');
+		page.editspace	 = $("#editspace");
 		page.edittitle = $("#edit-title");
 		page.editarea = $("#markdown-edit");
 		page.previewtitle = $("#preview-title");
@@ -106,17 +87,39 @@ result = true;
 	// page rendering
 	//-----------------------------------------------------------------------------
 	function _renderPage() {
-		var elemSave= _makeButton('btnSave', 'cse-control', '💾', 'save', _saveButtonClicked);
-		var elemReload = _makeButton('btnReload', 'cse-control', '🔄', 'reload', _reloadButtonClicked);
+		var elemSave= _makeButton('btnSave', 'cif-control', '💾', 'save', _saveButtonClicked);
+		var elemReload = _makeButton('btnReload', 'cif-control', '🔄', 'reload', _reloadButtonClicked);
 		page.savebutton = elemSave;
 		page.reloadbutton = elemReload;
-		console.log(page.header.controls.id);
+
 		page.header.controls.appendChild(elemSave);
 		page.header.controls.appendChild(elemReload);
 
+		page.edittitle.on('input', function () {
+			handleEditChanges();
+		});
+		page.editarea.bind('input change', function() {
+			handleEditChanges();
+		});
+		page.editspace.on('focusout', function() {
+			handleEditspaceLostFocus();
+		});
+		
+		$(".menu-option").on('click', function(e) {_contextMenuHandler(e);}); 
+		window.addEventListener('keyup', function(e) {
+			if (e.which == 27) displayMenu('hide');
+		});
+		window.addEventListener('click', function(e) {
+			displayMenu('hide');
+		});
+		
+		_getItemTree(_setNotice, _setupTree);
+	}	
+	
+	function _setupTree(jsonTree) {
 		$(function() {
 			page.itemtree.tree({
-				data: treeLayout,
+				data: JSON.parse(jsonTree.tree),
 				dragAndDrop: true,
 				slide: false
 			});
@@ -129,18 +132,6 @@ result = true;
 		page.itemtree.on('tree.close', function(e) {displayMenu('hide');} );
 		page.itemtree.on('tree.move', function(e) {displayMenu('hide');} );
 		
-		page.editarea.bind('input change', function() {
-			handleTestInputChange();
-		});
-		
-		$(".menu-option").on('click', function(e) {_contextMenuHandler(e);}); 
-		window.addEventListener('keyup', function(e) {
-			if (e.which == 27) displayMenu('hide');
-		});
-		window.addEventListener('click', function(e) {
-			displayMenu('hide');
-		});
-
 		// after tree loads, auto select first item if it exists
 		page.itemtree.on(
 			'tree.init',
@@ -151,40 +142,43 @@ result = true;
 				}
 			}
 		);
-	}	
+	}
 	
 	//------------------------------------------------------------------
 	// handlers
 	//------------------------------------------------------------------
 	function _saveButtonClicked() {
-		console.log('save');
+		var jsonTree = page.itemtree.tree('toJson');
+		_putItemTree(jsonTree, _setNotice, function() {});
 	}
 	
 	function _reloadButtonClicked() {
-		console.log('reload');
+		if (confirm('Any changes will be lost.  Are you sure you want to reload?\n\nPress OK to reload.')) {
+			_getItemTree(_setNotice, _reloadTree);
+		}
+	}
+	
+	function _reloadTree(jsonTree) {
+		page.itemtree.tree('loadData', JSON.parse(jsonTree.tree));
+		var root = page.itemtree.tree('getTree');
+		if (root.children.length > 0) {
+			page.itemtree.tree('selectNode', root.children[0]);
+		}
 	}
 	
 	function _treeSelectHandler(e) {
 		if (e.node == null) return;
 
-		var oldNode = settings.currentnode;
 		var newNode = page.itemtree.tree('getNodeById', e.node.id);
 		
 		displayMenu('hide');
 
-		// save editing work 
-		if (oldNode != null) {
-			var name = page.edittitle.val();
-			if (name.length > 40) name = name.substring(0,40) + '...';
-			var content = {label: page.edittitle.val(), markdown: page.editarea.val()};
-			page.itemtree.tree('updateNode', oldNode, {name: name, content: content} );
-		}
+		_storeCurrentNodeEditwork();
 		
 		_loadNodeContent(newNode);
-
 		settings.currentnode = newNode;
 		
-		handleTestInputChange();
+		handleEditChanges();
 	}
 	
 	function _treeRightClickHandler(e) {
@@ -223,12 +217,28 @@ result = true;
 		}
 	}
 	
-	function handleTestInputChange() {
+	function handleEditChanges() {
+		page.previewtitle.html('Preview: ' + page.edittitle.val());
 		var orig = page.editarea.val();
 		var formatted = formatTextFromMarkup(orig, false);
 		page.previewarea.html(formatted);
 	}
+	
+	function handleEditspaceLostFocus() {
+		_storeCurrentNodeEditwork();
+	}
 
+	function _storeCurrentNodeEditwork() {
+		var node = settings.currentnode;
+				
+		if (node != null) {
+			var name = page.edittitle.val();
+			if (name.length > 40) name = name.substring(0,40) + '...';
+			var content = {label: page.edittitle.val(), markdown: page.editarea.val()};
+			page.itemtree.tree('updateNode', node, {name: name, content: content} );
+		}
+	}
+	
 	function _loadNodeContent(node) {
 		if (node.hasOwnProperty('content')){
 			page.edittitle.val(node.content.label);
