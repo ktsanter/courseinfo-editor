@@ -1,8 +1,6 @@
 //
 // TODO: move some more CSS to common?
 // TODO: consider way to reorder list and have it preserved between tree selections
-// TODO: implement dirty bit
-// TODO: deal with dummy course selection - disable controls, default to first course?
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info mapper'
@@ -18,7 +16,8 @@ const app = function () {
 	};
 	
 	const settings = {
-		"coursekey": NO_COURSE
+		"coursekey": NO_COURSE,
+		"dirtybit": false
 	};
 	
 	//---------------------------------------
@@ -83,12 +82,14 @@ result = true;
 
 		var elemCourseSelect = _createCourseSelect(courselist);
 		page.header.courses.appendChild(elemCourseSelect);
+		_enableCourseSelect(false);
 
 		var elemSave= _makeButton('btnSave', 'cif-control', '💾', 'save', _saveButtonClicked);
 		var elemReload = _makeButton('btnReload', 'cif-control', '🔄', 'reload', _reloadButtonClicked);
 		page.savebutton = elemSave;
 		page.reloadbutton = elemReload;
-
+		_enableButtons(false);
+		
 		page.header.controls.appendChild(elemSave);
 		page.header.controls.appendChild(elemReload);
 
@@ -121,6 +122,7 @@ result = true;
 		
 		return elemCourseSelect;
 	}
+	
 	function _setupTree(jsonTree) {
 		page.itemtree.tree({
 			data: JSON.parse(jsonTree.tree),
@@ -128,6 +130,8 @@ result = true;
 		});
 		
 		page.itemtree.on('tree.click', function(e) { _treeClickHandler(e);} );
+		
+		_enableCourseSelect(true);
 	}
 	
 	function _renderSelectedItems() {
@@ -202,11 +206,21 @@ result = true;
 		settings.selectedItems = list;
 	}
 		
+	function _enableButtons(enable) {
+		page.savebutton.disabled = !enable;
+		page.reloadbutton.disabled = !enable;
+	}
+	
+	function _enableCourseSelect(enable) {
+		page.courseselect.disabled = !enable;
+	}
+	
 	//------------------------------------------------------------------
 	// handlers
 	//------------------------------------------------------------------
 	function _courseSelectChanged(evt) {
 		settings.coursekey = evt.target.value;
+		_enableButtons(false);
 
 		if (settings.coursekey == NO_COURSE) {
 			_clearTreeSelections();
@@ -231,14 +245,24 @@ result = true;
 	
 	function _reloadButtonClicked() {
 		if (settings.coursekey == NO_COURSE) return;
-
-		if (confirm('Any changes will be lost.  Are you sure you want to reload?\n\nPress OK to reload.')) {
-			_getItemList(settings.coursekey, _setNotice, dummycallback);
+		
+		var confirmed = true;
+		if (settings.dirtybit) {
+			confirmed = confirm('Any changes will be lost.  Are you sure you want to reload?\n\nPress OK to reload.');
+		}
+		if (confirmed) {
+			_enableButtons(false);
+			_getItemList(settings.coursekey, _setNotice, _loadMapping);
 		}
 	}
 	
 	function _treeClickHandler(e) {
 		if (e.node == null) return;
+
+		if (page.courseselect.value == NO_COURSE) {
+			e.preventDefault(); 
+			return;
+		};
 
         e.preventDefault(); // prevent single selection
         var selectedNode = e.node;
@@ -246,12 +270,15 @@ result = true;
 		var makeSelected = !page.itemtree.tree('isNodeSelected', selectedNode);
 		_propagateSelection(selectedNode, makeSelected);
 		_renderSelectedItems();
+		_setDirtyBit(true);
 	}
 	
 	function _loadMapping(data) {
 		var idlist = JSON.parse(data);
 		_setTreeSelection(page.itemtree.tree('getTree'), idlist);
-		_renderSelectedItems();		
+		_renderSelectedItems();	
+		_enableButtons(true);
+		_setDirtyBit(false);
 	}
 	
 	function _clearTreeSelections() {
@@ -298,6 +325,13 @@ result = true;
 			
 		return list;
 	}
+	
+	function _setDirtyBit(isDirty) {
+		settings.dirtybit = isDirty;
+		var msg = PAGE_TITLE;
+		if (settings.dirtybit) msg = "*" + msg;
+		page.header.toolname.innerHTML = msg;
+	}		
 
 	//---------------------------------------
 	// utility functions
@@ -326,8 +360,7 @@ result = true;
 	
 	function _isLeaf(node) {
 		return (node.children.length == 0);
-	}
-	
+	}	
 		
 	function valIsInArray(val, arr) {
 		var found = false;

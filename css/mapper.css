@@ -43,6 +43,10 @@ button.cif-control {
 	font-size: 10px;
 }
 
+.cif-control:disabled {
+	background-color: var(--cif-color3);
+}
+
 .cif-notice {
 	color: blue;
 	font-size: 14px;
