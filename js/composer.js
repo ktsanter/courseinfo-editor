@@ -3,7 +3,7 @@
 // TODO: add flattened node list to save data
 //
 const app = function () {
-	const PAGE_TITLE = 'Course info editor'
+	const PAGE_TITLE = 'Course info composer'
 		
 	const page = {
 		body: null,
