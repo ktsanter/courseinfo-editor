@@ -1,15 +1,16 @@
 //
-// TODO: add retrieval and dropdown for course list
-// TODO: initialize settings.selectedItems based on course selection
-// TODO: add save for mappings per course
 // TODO: move some more CSS to common?
 // TODO: consider way to reorder list and have it preserved between tree selections
+// TODO: implement dirty bit
+// TODO: deal with dummy course selection - disable controls, default to first course?
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info mapper'
+	const NO_COURSE = 'NO_COURSE';
 		
 	const page = {
 		body: null,
+		header: null,
 		notice: null,
 		title: null,
 		itemtree: null,
@@ -17,6 +18,7 @@ const app = function () {
 	};
 	
 	const settings = {
+		"coursekey": NO_COURSE
 	};
 	
 	//---------------------------------------
@@ -27,6 +29,7 @@ const app = function () {
 
 		page.header = document.getElementById('header');
 		page.header.toolname = document.getElementById('toolname');
+		page.header.courses = document.getElementById('courses');
 		page.header.controls = document.getElementById('controls');
 
 		page.notice = document.getElementById('notice');
@@ -34,13 +37,7 @@ const app = function () {
 
 		page.itemtree = $('#tree1');
 		page.mapspace = document.getElementById('mapspace');
-		
-		page.body.classList.add('cif-colorscheme');
-		page.header.classList.add('cif-title');
-		page.notice.classList.add('cif-notice');			
-		
-		page.header.toolname.innerHTML = PAGE_TITLE;
-		
+				
 		settings.selectedItems = [];
 		
 		_setNotice('initializing...');
@@ -48,7 +45,7 @@ const app = function () {
 			_setNotice('Failed to initialize - invalid parameters');
 		} else {
 			_setNotice('');
-            _renderPage();
+            _getCourseList(_setNotice, _initHeader);
 		}
 	}
 	
@@ -77,7 +74,16 @@ result = true;
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
-	function _renderPage() {
+	function _initHeader(courselist) {
+		page.header.toolname.innerHTML = PAGE_TITLE;
+
+		page.body.classList.add('cif-colorscheme');
+		page.header.classList.add('cif-title');
+		page.notice.classList.add('cif-notice');			
+
+		var elemCourseSelect = _createCourseSelect(courselist);
+		page.header.courses.appendChild(elemCourseSelect);
+
 		var elemSave= _makeButton('btnSave', 'cif-control', '💾', 'save', _saveButtonClicked);
 		var elemReload = _makeButton('btnReload', 'cif-control', '🔄', 'reload', _reloadButtonClicked);
 		page.savebutton = elemSave;
@@ -85,10 +91,36 @@ result = true;
 
 		page.header.controls.appendChild(elemSave);
 		page.header.controls.appendChild(elemReload);
-		
+
+		_renderPage();
+	}
+	
+	function _renderPage() {
 		_getItemTree(_setNotice, _setupTree);
 	}	
 	
+	function _createCourseSelect(courseList) {
+		var elemCourseSelect = document.createElement('select');
+		elemCourseSelect.id = 'selectCourse';
+		elemCourseSelect.classList.add('cif-control');
+		elemCourseSelect.addEventListener('change',  _courseSelectChanged, false);
+		
+		var elemNoCourseOption = document.createElement('option');
+		elemNoCourseOption.value = NO_COURSE;
+		elemNoCourseOption.text = '<select a course>';
+		elemCourseSelect.appendChild(elemNoCourseOption);
+		
+		for (var i = 0; i <  courseList.length; i++) {
+			var elemOption = document.createElement('option');
+			elemOption.value = courseList[i].coursekey;
+			elemOption.text = courseList[i].fullname;
+			elemCourseSelect.appendChild(elemOption);
+		}
+
+		page.courseselect = elemCourseSelect;
+		
+		return elemCourseSelect;
+	}
 	function _setupTree(jsonTree) {
 		page.itemtree.tree({
 			data: JSON.parse(jsonTree.tree),
@@ -163,22 +195,46 @@ result = true;
 		var list = settings.selectedItems;
 		
 		var root = page.itemtree.tree('getTree');
-		var treelist = _getSelectedNodes(root);	
+		var treelist = _getSelectedNodes(root, true);	
 		
 		list = treelist;  // make deltas to list based on treelist first?
 		
 		settings.selectedItems = list;
 	}
-	
+		
 	//------------------------------------------------------------------
 	// handlers
 	//------------------------------------------------------------------
+	function _courseSelectChanged(evt) {
+		settings.coursekey = evt.target.value;
+
+		if (settings.coursekey == NO_COURSE) {
+			_clearTreeSelections();
+			settings.selectedItems = [];
+			_renderSelectedItems();
+			
+		} else {
+			_getItemList(settings.coursekey, _setNotice, _loadMapping);
+		}
+	}
+		
 	function _saveButtonClicked() {
-		console.log('save');
+		var nodelist = _getSelectedNodes(page.itemtree.tree('getTree'), false);
+		var itemlist = [];
+		for (var i = 0; i < nodelist.length; i++) {
+			itemlist.push(nodelist[i].id);
+		}
+		
+		var data = {"courseindex": page.courseselect.selectedIndex - 1, "itemlist": JSON.stringify(itemlist)};
+		_putItemList(data, _setNotice, function() {})
 	}
 	
 	function _reloadButtonClicked() {
-		console.log('reload');
+		if (settings.coursekey == NO_COURSE) return;
+
+		if (confirm('Any changes will be lost.  Are you sure you want to reload?\n\nPress OK to reload.')) {
+			_getItemList(settings.coursekey, _setNotice, dummycallback);
+		}
 	}
 	
 	function _treeClickHandler(e) {
@@ -192,6 +248,29 @@ result = true;
 		_renderSelectedItems();
 	}
 	
+	function _loadMapping(data) {
+		var idlist = JSON.parse(data);
+		_setTreeSelection(page.itemtree.tree('getTree'), idlist);
+		_renderSelectedItems();		
+	}
+	
+	function _clearTreeSelections() {
+		var root = page.itemtree.tree('getTree');
+		_propagateSelection(root, false);
+	}
+	
+	function _setTreeSelection(basenode, idlist) {
+		if (valIsInArray(basenode.id, idlist)) {
+			page.itemtree.tree('addToSelection', basenode);
+		} else {
+			page.itemtree.tree('removeFromSelection', basenode);
+		}
+		
+		for (var i = 0; i < basenode.children.length; i++) {
+			_setTreeSelection(basenode.children[i], idlist);
+		}
+	}
+
 	function _propagateSelection(baseNode, makeSelected) {
 		var action = 'removeFromSelection';
 		if (makeSelected) action = 'addToSelection';
@@ -203,23 +282,23 @@ result = true;
 		}
 	}
 	
-	function _getSelectedNodes(basenode) {
+	function _getSelectedNodes(basenode, leafonly) {
 		var list = [];
 		
 		if (basenode.hasOwnProperty('content')) {
-			if (_isLeaf(basenode) && page.itemtree.tree('isNodeSelected', basenode)) {
+			if ((_isLeaf(basenode) || !leafonly) && page.itemtree.tree('isNodeSelected', basenode)) {
 				list.push(basenode);
 			}
 		}
 		
 		var children = basenode.children;
 		for (var i = 0; i < children.length; i++) {
-			 list = list.concat(_getSelectedNodes(children[i]));
+			 list = list.concat(_getSelectedNodes(children[i], leafonly));
 		}
 			
 		return list;
 	}
-	
+
 	//---------------------------------------
 	// utility functions
 	//----------------------------------------
@@ -247,6 +326,16 @@ result = true;
 	
 	function _isLeaf(node) {
 		return (node.children.length == 0);
+	}
+	
+		
+	function valIsInArray(val, arr) {
+		var found = false;
+		
+		for (var i = 0; i < arr.length && !found; i++) {
+			if (val == arr[i]) found = true;
+		}
+		return found;
 	}
 	
 	return {

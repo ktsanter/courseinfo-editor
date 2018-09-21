@@ -39,6 +39,10 @@ body {
 	margin-bottom: 2px;
 }
 
+button.cif-control {
+	font-size: 10px;
+}
+
 .cif-notice {
 	color: blue;
 	font-size: 14px;
