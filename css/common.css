@@ -1,3 +1,58 @@
+.cif-colorscheme {
+	--cif-color1: #2d3436;
+	--cif-color2: #f8f8f8;
+	--cif-color3: #c8c8c8;
+	--cif-color4: #2f8d98;
+	--cif-color5: #ffffff;
+}
+
+body {
+	color: var(--cif-color1);
+	background-color: var(--cif-color2);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	margin-left: 12px;
+	margin-right: 12px;
+}
+
+.cif-title {
+	color: var(--cif-color5);
+	background-color: var(--cif-color4);
+	border-color: var(--cif-color5);
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: bold;
+	padding: 4px;
+}
+
+.cif-control {
+	color: var(--cif-color1);
+	background-color: var(--cif-color2);
+	margin-left: 3px;
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 7px;
+	font-size: 12px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+button.cif-control {
+	font-size: 10px;
+}
+
+.cif-control:disabled {
+	background-color: var(--cif-color3);
+}
+
+.cif-notice {
+	color: blue;
+	font-size: 14px;
+	font-style: italic;
+}
+
 .ci-colorscheme {
 	--ci-color1: #2d3436;
 	--ci-color2: #f8f8f8;

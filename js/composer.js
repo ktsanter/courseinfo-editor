@@ -1,6 +1,4 @@
 //
-// TODO: incorporate standard CSS into MD display
-// TODO: add flattened node list to save data
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info composer'
@@ -196,6 +194,9 @@ result = true;
 		displayMenu('hide');
 	}
 	
+	//---------------------------------------
+	// tree support routines
+	//----------------------------------------
 	function _addNodeAfter(node) {
 		var newId = _getUniqueTreeId();  // get id for new node
 
@@ -257,6 +258,21 @@ result = true;
 		}
 	}
 	
+	function _isLeaf(node) {
+		return (node.children.length == 0);
+	}
+	
+	function _getUniqueTreeId() {
+		var idmap = page.itemtree.tree('getTree').id_mapping;
+		var newId = -1;
+		for (var id in idmap) {
+			var idval = parseInt(id);
+			if (idval >= newId) newId = idval + 1;
+		}
+
+		return newId;
+	}
+
 	//---------------------------------------
 	// utility functions
 	//----------------------------------------
@@ -292,22 +308,7 @@ result = true;
 		page.menu.style.top = top.toString() + 'px';
 		displayMenu('show');
 	};		
-	
-	function _isLeaf(node) {
-		return (node.children.length == 0);
-	}
-	
-	function _getUniqueTreeId() {
-		var idmap = page.itemtree.tree('getTree').id_mapping;
-		var newId = -1;
-		for (var id in idmap) {
-			var idval = parseInt(id);
-			if (idval >= newId) newId = idval + 1;
-		}
-
-		return newId;
-	}
-	
+		
 	return {
 		init: init
  	};

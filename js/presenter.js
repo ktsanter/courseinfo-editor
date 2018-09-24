@@ -1,6 +1,4 @@
 //
-// TODO: move some more CSS to common?
-// TODO: add iframe resizer code
 //
 const app = function () {
 	const PAGE_TITLE = 'Course info presenter'

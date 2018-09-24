@@ -1,6 +1,4 @@
 //
-// TODO: add embed code button
-// TODO: move some more CSS to common?
 // TODO: consider way to reorder list and have it preserved between tree selections
 //
 const app = function () {
@@ -271,7 +269,6 @@ result = true;
 		_copyEmbedCodeToClipboard();
 	}
 	
-	
 	function _treeClickHandler(e) {
 		if (e.node == null) return;
 
@@ -289,6 +286,9 @@ result = true;
 		_setDirtyBit(true);
 	}
 	
+	//------------------------------------------------------------------
+	// tree support routines
+	//------------------------------------------------------------------
 	function _loadMapping(data) {
 		var idlist = JSON.parse(data.itemlist);
 		_setTreeSelection(page.itemtree.tree('getTree'), idlist);
@@ -342,13 +342,10 @@ result = true;
 		return list;
 	}
 	
-	function _setDirtyBit(isDirty) {
-		settings.dirtybit = isDirty;
-		var msg = PAGE_TITLE;
-		if (settings.dirtybit) msg = "*" + msg;
-		page.header.toolname.innerHTML = msg;
-	}		
-
+	function _isLeaf(node) {
+		return (node.children.length == 0);
+	}	
+		
 	//---------------------------------------
 	// utility functions
 	//----------------------------------------
@@ -374,10 +371,13 @@ result = true;
 		return btn;
 	}
 	
-	function _isLeaf(node) {
-		return (node.children.length == 0);
-	}	
-		
+	function _setDirtyBit(isDirty) {
+		settings.dirtybit = isDirty;
+		var msg = PAGE_TITLE;
+		if (settings.dirtybit) msg = "*" + msg;
+		page.header.toolname.innerHTML = msg;
+	}		
+
 	function valIsInArray(val, arr) {
 		var found = false;
 		
