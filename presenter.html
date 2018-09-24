@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	
+	<title>Course info presenter</title>
+
+	<link rel="stylesheet" href="css/jqtree.css">
+	<link rel="stylesheet" href="css/common.css">
+	<link rel="stylesheet" href="css/presenter.css">
+</head>
+
+<body class="cif-colorscheme ci-colorscheme">
+	<div id="notice" class='cif-notice'></div>
+	<div id="infotree" class='cif-tree'> </div>
+	<div id="title" class = 'cif-title'> </div>
+	<div id='contents'></div>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>	
+	<script src="js/tree.jquery.js"></script>
+	<script src="js/commonmark.min.js"></script>
+	<script src="js/commentbuddy_markdown.js"></script>
+	<script src="js/emojifier.js"></script>
+	<script src="js/datastore.js"></script>
+	<script src="js/presenter.js"></script>
+	
+	<script>
+		document.addEventListener('DOMContentLoaded', app.init);
+	</script>
+</body>
+</html>

@@ -108,7 +108,7 @@ function _getItemList (coursekey, notice, callback) {
 				notice(json.message);
 			} else {
 				notice('');
-				callback(json.data.itemlist);
+				callback(json.data);
 			}
 		})
 		.catch((error) => {

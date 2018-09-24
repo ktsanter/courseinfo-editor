@@ -1,4 +1,5 @@
 //
+// TODO: add embed code button
 // TODO: move some more CSS to common?
 // TODO: consider way to reorder list and have it preserved between tree selections
 //
@@ -36,6 +37,9 @@ const app = function () {
 
 		page.itemtree = $('#tree1');
 		page.mapspace = document.getElementById('mapspace');
+		
+		page.textforclipboard = document.getElementById('text_for_clipboard');
+		page.textforclipboard.style.display = 'none';
 				
 		settings.selectedItems = [];
 		
@@ -86,12 +90,16 @@ result = true;
 
 		var elemSave= _makeButton('btnSave', 'cif-control', '💾', 'save', _saveButtonClicked);
 		var elemReload = _makeButton('btnReload', 'cif-control', '🔄', 'reload', _reloadButtonClicked);
+		var elemEmbed = _makeButton('btnEmbed', 'cif-control', 'embed', 'copy embed code to clipboard', _embedButtonClicked);
+
 		page.savebutton = elemSave;
 		page.reloadbutton = elemReload;
+		page.embedbutton = elemEmbed;
 		_enableButtons(false);
 		
 		page.header.controls.appendChild(elemSave);
 		page.header.controls.appendChild(elemReload);
+		page.header.controls.appendChild(elemEmbed);
 
 		_renderPage();
 	}
@@ -209,6 +217,7 @@ result = true;
 	function _enableButtons(enable) {
 		page.savebutton.disabled = !enable;
 		page.reloadbutton.disabled = !enable;
+		page.embedbutton.disabled = !enable;
 	}
 	
 	function _enableCourseSelect(enable) {
@@ -256,6 +265,13 @@ result = true;
 		}
 	}
 	
+	function _embedButtonClicked(evt) {
+		if (page.courseselect.value == NO_COURSE) return;
+		
+		_copyEmbedCodeToClipboard();
+	}
+	
+	
 	function _treeClickHandler(e) {
 		if (e.node == null) return;
 
@@ -274,7 +290,7 @@ result = true;
 	}
 	
 	function _loadMapping(data) {
-		var idlist = JSON.parse(data);
+		var idlist = JSON.parse(data.itemlist);
 		_setTreeSelection(page.itemtree.tree('getTree'), idlist);
 		_renderSelectedItems();	
 		_enableButtons(true);
@@ -369,6 +385,33 @@ result = true;
 			if (val == arr[i]) found = true;
 		}
 		return found;
+	}
+	
+    //------------------------------------------------------------------------------------------
+    // create embed code and copy to clipboard
+    //------------------------------------------------------------------------------------------
+	function _copyEmbedCodeToClipboard() {
+		_setNotice('');
+				
+		var clipboardElement = page.textforclipboard;
+		clipboardElement.value = _createEmbedCode();
+		clipboardElement.style.display = 'block';
+		clipboardElement.select();
+		document.execCommand("Copy");
+		clipboardElement.selectionEnd = clipboardElement.selectionStart;
+		page.textforclipboard.style.display = 'none';
+
+		_setNotice(settings.coursekey + ' embed code copied to clipboard');
+	}
+	
+	function _createEmbedCode() {
+		// note the javascript link is to courseinfosizer.js in Google Drive
+		var embedCode = '' 
+			+ '<script type="text/javascript" src="https://drive.google.com/uc?id=1lE_MPv0lYEX6mFaTPFmJ7S83YRRbLSQo"></script>'
+			+ '<iframe id="iframe-coursegenerator" width="100%" height="100" '
+			+ 'src="https://ktsanter.github.io/courseinfo-editor/?coursekey=' + settings.coursekey + '"></iframe>';
+
+		return embedCode;
 	}
 	
 	return {
