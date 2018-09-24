@@ -409,7 +409,7 @@ result = true;
 		var embedCode = '' 
 			+ '<script type="text/javascript" src="https://drive.google.com/uc?id=1lE_MPv0lYEX6mFaTPFmJ7S83YRRbLSQo"></script>'
 			+ '<iframe id="iframe-coursegenerator" width="100%" height="100" '
-			+ 'src="https://ktsanter.github.io/courseinfo-editor/?coursekey=' + settings.coursekey + '"></iframe>';
+			+ 'src="https://ktsanter.github.io/courseinfo-editor/presenter?coursekey=' + settings.coursekey + '"></iframe>';
 
 		return embedCode;
 	}
