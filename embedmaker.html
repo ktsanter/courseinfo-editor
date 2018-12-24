@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Course Info embed generator</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/embedmaker.css">
+  </head>
+
+  <body class="ciembed-colorscheme">
+
+    <div class="ciembed-title">
+      Course Info embed code generator
+    </div>
+      
+    <hr>
+
+    <div class="ciembed-container">    
+      <div class="ciembed-item">
+        <span> select course </span>
+        <select id="selCourse"> </select>
+      </div>
+      
+      <div class="ciembed-item">
+        <span> instance </span>
+        <input id="numInstance" value="1" type="number" min="1" max="20">
+      </div>
+      
+      <div class="ciembed-item">
+        <button id="btnCreateLink">link</button>
+        <button id="btnCreateEmbed">embed</button>
+        <div id="embedNotice" class="ciembed-notice"> </div>
+      </div>
+    </div>
+    
+    <script src="js/embedmaker.js"></script>	
+    <script>
+      document.addEventListener('DOMContentLoaded', app.init);
+    </script>
+  </body>
+</html>

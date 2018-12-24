@@ -13,7 +13,8 @@ const app = function () {
 	};
 	
 	const settings = {
-		"coursekey": NO_COURSE
+		"coursekey": NO_COURSE,
+    "instance": null
 	};
 	
 	//---------------------------------------
@@ -48,8 +49,10 @@ const app = function () {
 		var params = {};
 		var urlParams = new URLSearchParams(window.location.search);
 		params.coursekey = urlParams.has('coursekey') ? urlParams.get('coursekey') : null;
+    params.instance = urlParams.has('instance') ? urlParams.get('instance') : 1;   // optional - if not provided then assumed 1
 
 		settings.coursekey = params.coursekey;
+    settings.instance = params.instance;
 		
 		if (params.coursekey != null) {
 			result = true;
@@ -245,8 +248,8 @@ const app = function () {
 	// iframe responsive height - post message to parent (if in an iframe) to resizeBy
 	//-----------------------------------------------------------------------------------
 	function _postHeightChangeMessage() {
-		var msg = document.body.scrollHeight + '-' + 'CourseInfoGenerator';
-		//console.log('posting to parent: ' + msg);
+		var msg = document.body.scrollHeight + '-' + 'CourseInfoGenerator' + '-' + settings.instance;
+		console.log('posting to parent: ' + msg);
 		window.parent.postMessage(msg, "*");
 	}
 
