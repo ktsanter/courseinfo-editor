@@ -50,9 +50,11 @@ const app = function () {
 		var urlParams = new URLSearchParams(window.location.search);
 		params.coursekey = urlParams.has('coursekey') ? urlParams.get('coursekey') : null;
     params.instance = urlParams.has('instance') ? urlParams.get('instance') : 1;   // optional - if not provided then assumed 1
+    params.title = urlParams.has('title') ? urlParams.get('title') : null;
 
 		settings.coursekey = params.coursekey;
     settings.instance = params.instance;
+    settings.title = params.title;
 		
 		if (params.coursekey != null) {
 			result = true;
@@ -155,7 +157,11 @@ const app = function () {
 	// tree support routines 
 	//------------------------------------------------------------------
 	function _loadMapping(data) {
-		page.title.innerHTML = 'Expectations and FAQs for ' + data.coursefullname;
+    var sTitle = 'Expectations and FAQs for ' + data.coursefullname;
+    if (settings.title) {
+      sTitle = settings.title;
+    }
+		page.title.innerHTML = sTitle;
 		var idlist = JSON.parse(data.itemlist);
 		_setTreeSelection(page.itemtree.tree('getTree'), idlist);
 		_renderSelectedItems();	
