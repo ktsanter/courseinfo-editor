@@ -3,7 +3,7 @@
 const app = function () {
 	const PAGE_TITLE = 'Course info presenter'
 	const NO_COURSE = 'NO_COURSE';
-		
+  
 	const page = {
 		body: null,
 		notice: null,
@@ -152,7 +152,11 @@ const app = function () {
 	//------------------------------------------------------------------
 	// handlers
 	//------------------------------------------------------------------
-
+  function _handleOpenInFullWindow() {
+    console.log('open in full window');
+    window.open(window.location.href, '_blank');
+  }
+  
 	//------------------------------------------------------------------
 	// tree support routines 
 	//------------------------------------------------------------------
@@ -162,6 +166,15 @@ const app = function () {
       sTitle = settings.title;
     }
 		page.title.innerHTML = sTitle;
+    
+    var elemIcon = document.createElement('i');
+    page.title.appendChild(elemIcon);
+    elemIcon.id = 'iconOpenFullWindow';
+    elemIcon.title = 'open in full window';
+    elemIcon.classList.add('fas');
+    elemIcon.classList.add('fa-external-link-alt');
+    elemIcon.addEventListener('click', _handleOpenInFullWindow);
+    
 		var idlist = JSON.parse(data.itemlist);
 		_setTreeSelection(page.itemtree.tree('getTree'), idlist);
 		_renderSelectedItems();	

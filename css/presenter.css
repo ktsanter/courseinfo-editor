@@ -1,3 +1,7 @@
 .cif-tree {
 	display: none;
 }
+
+#iconOpenFullWindow {
+  float: right;
+}
