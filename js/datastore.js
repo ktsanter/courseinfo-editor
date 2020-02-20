@@ -1,4 +1,5 @@
-const API_BASE = 'https://script.google.com/macros/s/AKfycbw0vPrgWJYrGoJ-Z7wAvbFeyD0Vtl6ko5l1J4BCszjXgAXk3iM/exec';
+const API_BASE = 'https://script.google.com/macros/s/AKfycbxwwp7jGycw1Rk8I4OBpOE5p17HU5T9RvJ3MTMAj--cg0KCKJ8k/exec';
+// orig: 'https://script.google.com/macros/s/AKfycbw0vPrgWJYrGoJ-Z7wAvbFeyD0Vtl6ko5l1J4BCszjXgAXk3iM/exec';
 const API_KEY = 'MVcourseinfoeditorAPI';
 
 //--------------------------------------------------------------
@@ -9,7 +10,7 @@ const API_KEY = 'MVcourseinfoeditorAPI';
 	url += '?key=' + API_KEY;
 	url += datasetname && datasetname !== null ? '&dataset=' + datasetname : '';
 	url += coursekey && coursekey !== null ? '&coursekey=' + coursekey : '';
-	//console.log('buildApiUrl: url=' + url);
+	console.log('buildApiUrl: url=' + url);
 	
 	return url;
 }
