@@ -23,7 +23,27 @@ const app = function () {
     "apcsp2": "AP Computer Science Principles (S2)",
     "html_css": "Basic Web Design: HTML & CSS",
     "digital_literacy": "Digital Literacy & Programming",
-    "fpb": "Foundations of Programming B"
+    "fpb": "Foundations of Programming B",
+    "java_a": "Java Programming A",
+    "js_game_design": "JavaScript Game Design",
+    "procprog": "Procedural Programming",
+    "java_a_tips_ce1": "Java Programming A (tips for Unit 1 coding exercises)",
+    "java_a_tips_ce2": "Java Programming A (tips for Unit 2 coding exercises)",
+    "java_a_tips_ce3": "Java Programming A (tips for Unit 3 coding exercises)",
+    "java_a_tips_ce4": "Java Programming A (tips for Unit 4 coding exercises)",
+    "java_a_tips_ce5": "Java Programming A (tips for Unit 5 coding exercises)",
+    "java_a_tips_ce6": "Java Programming A (tips for Unit 6 coding exercises)",
+    "java_a_tips_ce7": "Java Programming A (tips for Unit 7 coding exercises)",
+    "java_a_tips_ce8": "Java Programming A (tips for Unit 8 coding exercises)",
+    "java_a_tips_apply1": "Java Programming A (tips for Unit 1 apply problems)",
+    "java_a_tips_apply2": "Java Programming A (tips for Unit 2 apply problems)",
+    "java_a_tips_apply3": "Java Programming A (tips for Unit 3 apply problems)",
+    "java_a_tips_apply4": "Java Programming A (tips for Unit 4 apply problems)",
+    "java_a_tips_apply5": "Java Programming A (tips for Unit 5 apply problems)",
+    "java_a_tips_apply6": "Java Programming A (tips for Unit 6 apply problems)",
+    "java_a_tips_apply7": "Java Programming A (tips for Unit 7 apply problems)",
+    "java_a_tips_apply8": "Java Programming A (tips for Unit 8 apply problems)",
+    "apcsp_myap": "AP CS Principles - myAP resources"
   }
   
   const terms = {
